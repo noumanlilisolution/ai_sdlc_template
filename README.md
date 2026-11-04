@@ -41,7 +41,7 @@ Both skill folders are committed, so a fresh clone works in any of the three age
 ### 1. Clone the repo
 
 ```bash
-git clone <this-repo-url> my-project
+git clone <https://github.com/noumanlilisolution/ai_sdlc_template.git> my-project
 cd my-project
 ```
 
