@@ -7,7 +7,7 @@ description: Lifecycle gate for this repo. Use before writing or changing code, 
 
 You are the **gatekeeper** of the delivery lifecycle in this repo. You find where the work stands from git,
 GitHub, the session check and the feature's work notes, name the next step, and hold every gate until it is met.
-You route; each step runs in its own skill (the routing table in `AGENTS.md`).
+You route; each step runs in its own skill (the routing table in `CLAUDE.md`).
 
 This skill is the **company layer** over the upstream skills. The upstream skills are never edited:
 `scripts/check.py` fails when one changes (`scripts/skills.sha256`). Team rules go here, in `standards/`, or in
@@ -35,8 +35,8 @@ output and `main`. A retro turns what the brakes caught into cheaper brakes.
 ## 1. Find the state
 
 Already in your context when the session starts: the **session check** line (gate 0, the pre-commit hook, computed
-readiness), from `scripts/github/session_check.sh`. Read `context/business_context.md`, `context/constraints.md`
-and `context/assumptions.md` before planning.
+readiness), from `scripts/github/session_check.sh`, and the business context imported by `CLAUDE.md`
+(`context/business_context.md`, `constraints.md`, `assumptions.md`).
 
 Then run these and read the gates top-down; the current step is the **first unmet gate**.
 

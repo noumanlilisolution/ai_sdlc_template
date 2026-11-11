@@ -6,7 +6,7 @@ A lean, project-agnostic starting repo for teams that build software with Claude
 
 Coding agents produce better work when they follow a process: agree on the idea, write a spec, break it into tickets, build each one test-first, then review it. Left alone, an agent tends to jump straight to code. This template gives you that process from the first commit:
 
-- **Mandatory skills.** `AGENTS.md` maps every kind of request (new feature, bug, refactor, review, PR) to a skill. The agent picks the skill itself, says which one it chose, and follows its steps. You never have to remember skill names.
+- **Mandatory skills.** `CLAUDE.md` maps every kind of request (new feature, bug, refactor, review, PR) to a skill. The agent picks the skill itself, says which one it chose, and follows its steps. You never have to remember skill names.
 - **Human gates.** The agent stops for your approval at the points that matter: test seams in the spec, the ticket breakdown, and the merge to `main`.
 - **Shared standards.** `standards/` holds the rules `code-review` enforces, so every agent and every developer reviews against the same rulebook.
 
@@ -23,11 +23,11 @@ idea ──grill-with-docs──▶ shared understanding (+ GLOSSARY.md, ADRs)
      ──retro────────────▶ fixes to checks, standards, docs
 ```
 
-Bugs enter at `diagnosing-bugs`, then go to `tdd` for the regression test and fix. The full routing table is in `AGENTS.md`; the `orchestrator` skill holds the gates (0-15) between the stages. The developer guide, with what you type at each step, is [docs/sdlc-guide.md](docs/sdlc-guide.md).
+Bugs enter at `diagnosing-bugs`, then go to `tdd` for the regression test and fix. The full routing table is in `CLAUDE.md`; the `orchestrator` skill holds the gates (0-15) between the stages. The developer guide, with what you type at each step, is [docs/sdlc-guide.md](docs/sdlc-guide.md).
 
 ## Setup after cloning
 
-You need Git, Python 3.9+, the `gh` CLI, and Claude Code v2.1.277 or later (it reads `AGENTS.md` and `.claude/skills/`). The skills are committed, so a fresh clone works with no install step.
+You need Git, Python 3.9+, the `gh` CLI, and Claude Code (it reads `CLAUDE.md` and `.claude/skills/`). The skills are committed, so a fresh clone works with no install step.
 
 ### 1. Clone the repo
 
@@ -49,7 +49,7 @@ claude             # or open the folder in the VS Code / JetBrains extension
 
 The **session check** (`scripts/github/session_check.sh`) runs at every session start: it creates the GitHub labels, switches on the pre-commit hook, and reports branch protection and computed readiness in one line.
 
-To use another tracker (GitLab, local markdown, Jira, Linear, ...), run `/setup-matt-pocock-skills`. It rewrites `docs/agents/` and the `## Agent skills` section of `AGENTS.md`.
+To use another tracker (GitLab, local markdown, Jira, Linear, ...), run `/setup-matt-pocock-skills`. It rewrites `docs/agents/` and the `## Agent skills` section of `CLAUDE.md`.
 
 ### 3. Run the check
 
@@ -85,7 +85,7 @@ python scripts/check.py                  # must end in "green"
 
 | Path | Purpose |
 | --- | --- |
-| `AGENTS.md` | Skill routing, setup, and gates; Claude Code loads it every session |
+| `CLAUDE.md` | Skill routing, gates, pointers, and the business context; Claude Code loads it every session |
 | `.claude/skills/` | Installed skills, pinned in `skills-lock.json`, plus our `orchestrator` (the gates) |
 | `.claude/settings.json` | Claude Code hooks (session check at start, stale-docs check after each commit) and read bans on secrets |
 | `context/` | Business context, requirements, constraints, assumptions, architecture, and go-live readiness |

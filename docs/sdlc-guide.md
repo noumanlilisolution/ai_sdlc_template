@@ -35,7 +35,7 @@ Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 
 | Thing | What it is | Who reads it |
 |---|---|---|
-| [AGENTS.md](../AGENTS.md) | Skill routing, gates and pointers | every agent, every session |
+| [CLAUDE.md](../CLAUDE.md) | Skill routing, gates, pointers, plus three business-context files imported into every session | Claude Code, every session |
 | [context/](../context/README.md) | The business: why, for whom, requirements, constraints, assumptions, architecture, readiness | agents and people before planning |
 | `GLOSSARY.md` | The domain words. Use them in code, tests, issues and PRs | every skill, every person |
 | `docs/adr/` | Decisions that are hard to reverse. Re-open one only with a new ADR | any step touching that area |
@@ -103,8 +103,7 @@ information. So nothing important lives in a session.
 
 | Layer | What | Lives in |
 |---|---|---|
-| **Always loaded** | `AGENTS.md`; the session check line | the repo |
-| **Before planning** | `context/business_context.md`, `constraints.md`, `assumptions.md` | the repo |
+| **Always loaded** | `CLAUDE.md` + `context/business_context.md`, `constraints.md`, `assumptions.md`; the session check line | the repo |
 | **On demand** | the step's skill, `context/requirements.md`, glossary, ADRs, readiness | the repo |
 | **Per feature** | issue, spec, tickets, one `<!-- work-notes -->` comment on the spec, the PR | GitHub; closed when the work ships |
 | **Review only** | `standards/` | the repo |
@@ -149,7 +148,7 @@ and the skills lock fails the build if anyone edits an upstream skill.
 
 | Finding | Remediation |
 |---|---|
-| A plain sentence ("fix the phones") skipped straight to code | the orchestrator gate, pointed at from `AGENTS.md` |
+| A plain sentence ("fix the phones") skipped straight to code | the orchestrator gate, pointed at from `CLAUDE.md` |
 | `/triage`, `/to-spec`, `/to-tickets`, `/implement`, `/retro` are user-only commands | the orchestrator names the command instead of trying to run it |
 | One long session mixed cleanup, a restructure and a feature, and its summaries lost detail | one cleared session per ticket; state in GitHub and the repo |
 | Skills installed as a plugin differ per machine and can change without review | the skills are committed into the repo and checksummed, so every change is reviewed in a PR |
