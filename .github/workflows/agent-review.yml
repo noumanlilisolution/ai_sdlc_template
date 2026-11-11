@@ -1,0 +1,48 @@
+# Layer 2 of the brakes: an automated review on three axes, reported separately.
+#   Standards - the rules in standards/ (tools already enforce the mechanical ones)
+#   Spec      - does the diff do what the linked spec issue asked
+#   Context   - does the diff follow context/ (business, requirements, constraints)
+# Needs the repository secret ANTHROPIC_API_KEY.
+name: agent-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+  id-token: write   # claude-code-action authenticates to GitHub with an OIDC token
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} of ${{ github.repository }}
+            against origin/${{ github.base_ref }} (three-dot diff) on three separate axes.
+
+            Standards: read standards/, GLOSSARY.md and docs/adr/ (whichever exist). Report
+            breaches of a rule in standards/ (cite the rule id) and contradictions of an ADR;
+            scripts/check.py already enforces the mechanical rules.
+
+            Spec: find the spec issue from "Closes #" in the PR body or "(#n)" in the
+            commit messages and read it with gh. Report what the spec asked for that is
+            missing or wrong, and anything the diff does that it did not ask for.
+
+            Context: follow "## 7. Context review" in .claude/skills/orchestrator/SKILL.md
+            (the same instructions the local review uses).
+
+            Post ONE comment on the PR with "## Standards", "## Spec" and "## Context"
+            sections. Do not merge or rerank the axes. Never quote secrets or personal data.
+          claude_args: |
+            --allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(gh issue view:*),Bash(gh pr view:*),Bash(gh pr comment:*)"

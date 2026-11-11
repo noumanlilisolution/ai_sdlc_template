@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(/secrets/**)",
+      "Read(/.env)",
+      "Read(/.env.*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/github/session_check.sh\"",
+            "timeout": 60,
+            "statusMessage": "Session check: gate 0, pre-commit hook, readiness"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(git commit *)",
+            "timeout": 120,
+            "statusMessage": "Checking which docs this commit made stale",
+            "prompt": "A git commit was just run in this repository: $ARGUMENTS\nIf it did not create a commit (a dry run, or it failed), answer ok. Otherwise read the commit with git show --stat HEAD and git show HEAD, then decide which of these documents it made wrong or incomplete: AGENTS.md, README.md, context/*.md, context/readiness/*.md, GLOSSARY.md, docs/adr/, docs/*.md, standards/*.md, .claude/skills/orchestrator/*.md. Follow DOC-2 in standards/documentation.md: a fact belongs in one file and every other file points at it, so also flag a commit that copies a rule into a second file. Never fill in context/readiness/approval_status.md. If no document needs a change, answer ok. Otherwise answer not ok and list each document with the reason, ids and paths only, never a secret or personal data."
+          }
+        ]
+      }
+    ]
+  }
+}

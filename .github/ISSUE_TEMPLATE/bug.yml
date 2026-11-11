@@ -1,0 +1,27 @@
+name: Bug
+description: Something the system did that it should not have (or did not do).
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Never paste secrets or personal data here. Use ids, counts, error ids and
+        log line references.
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: The log line(s), error id or exit code. Not a full stack trace.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Environment, version or commit, and the exact steps or command.

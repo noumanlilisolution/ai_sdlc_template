@@ -1,0 +1,10 @@
+#!/bin/sh
+# Runs the same umbrella check as the agent and CI. Switched on per clone by the session check
+# (scripts/github/session_check.sh), or by hand: git config core.hooksPath .githooks
+for py in .venv/Scripts/python.exe .venv/bin/python python3 python; do
+    if command -v "$py" >/dev/null 2>&1 && "$py" -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; then
+        exec "$py" scripts/check.py
+    fi
+done
+echo "pre-commit: no Python 3.9+ found to run scripts/check.py" >&2
+exit 1

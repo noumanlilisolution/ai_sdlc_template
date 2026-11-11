@@ -1,0 +1,26 @@
+name: Enhancement
+description: A problem the system does not solve yet. Describe the problem, not a solution.
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Say what is wrong or missing and who it hurts. Triage and grilling decide the
+        solution. No secrets or personal data here.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: who
+    attributes:
+      label: Who is affected, and how often
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Ids, counts, links to logs or reports.
