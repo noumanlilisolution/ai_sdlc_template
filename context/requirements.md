@@ -13,7 +13,7 @@ Context review cite rows by number (F1, N1).
 
 | # | The system must never | Decided in |
 |---|---|---|
-| N1 | <forbidden behaviour> | <ADR or standards/ rule id> |
+| N1 | <forbidden behaviour> | <ADR or CODING_STANDARDS.md rule id> |
 
 ## Quality
 

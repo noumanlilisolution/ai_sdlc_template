@@ -14,6 +14,11 @@ Closes #<ticket> #<ticket>  (the spec and the request issue are closed by hand a
 
 `python scripts/check.py` -> green
 
+<!-- Delete this section unless the docs check (orchestrator gate 10) left findings the human agreed to leave. -->
+## Docs waivers
+
+- `<path>`: <the finding>. Waived because <reason>; follow-up #<issue> (or "none needed").
+
 ## Merge Danger
 
 **Door:** <one-way or two-way>

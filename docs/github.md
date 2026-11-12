@@ -36,9 +36,10 @@ owners.
 
 ## Review by door
 
-Every PR needs `scripts/check.py` green (CI job `check`), the three-axis review (`REV-1` in
-[standards/code-review.md](../standards/code-review.md); locally at orchestrator gate 9, on the PR by
-`agent-review.yml`), and **one human approval** (`REV-7`).
+Every PR needs `scripts/check.py` green (CI job `check`), the three-axis review (Standards against
+[CODING_STANDARDS.md](../CODING_STANDARDS.md), Spec, Context; locally at orchestrator gate 9, on the PR by
+`agent-review.yml`), a docs check that came back ok or a `## Docs waivers` section in the body (orchestrator gate
+10), and **one human approval**.
 
 | Door | Examples | Human review |
 |---|---|---|
@@ -51,7 +52,7 @@ PRs only, CI green, one approval, code owners on the paths in `.github/CODEOWNER
 
 ## Skills
 
-Committed in `.claude/skills/`, never edited; team rules live in the `orchestrator` skill and `standards/`.
+Committed in `.claude/skills/`, never edited; team rules live in the `orchestrator` skill and `CODING_STANDARDS.md`.
 `scripts/check.py` fails when an upstream skill file changes (`scripts/skills.sha256`). Upgrade steps: [README](../README.md#updating-skills).
 
 ## Additions to the upstream playbook
@@ -62,4 +63,4 @@ Committed in `.claude/skills/`, never edited; team rules live in the `orchestrat
 | Business context | `context/`, a third review axis (Context), and a production-change gate with people-only sign-offs | Never guess a business fact; the two upstream axes miss business rules |
 | Session check | Every session: creates missing labels, switches on the pre-commit hook, reports protection and computed readiness | A fact a computer can check is checked, not written down; git hooks are off in a fresh clone |
 | Skills lock | Upstream skill files are checksummed; an edit fails `check.py` | An intended change shows up in the PR, so it is never silent |
-| Docs drift | A Claude Code hook after each agent commit asks a sub-agent which docs the commit made stale | Rules get copied into new docs and go stale |
+| Docs drift | A Claude Code hook after each agent commit, and a branch-wide docs check before `gh pr create` (orchestrator gate 10), ask a sub-agent which docs are stale. The PR opens only when the check is ok or each finding is waived in its body | Rules get copied into new docs and go stale; a fix promised for "the next commit" is easy to forget |

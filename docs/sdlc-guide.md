@@ -40,7 +40,7 @@ Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 | `GLOSSARY.md` | The domain words. Use them in code, tests, issues and PRs | every skill, every person |
 | `docs/adr/` | Decisions that are hard to reverse. Re-open one only with a new ADR | any step touching that area |
 | `.out-of-scope/` | Ideas we chose not to build, and why | `/triage` |
-| [standards/](../standards/) | The reviewer's rulebook (tools enforce the mechanical rules) | review |
+| [CODING_STANDARDS.md](../CODING_STANDARDS.md) | The reviewer's judgement calls (tools enforce the mechanical rules) | review only |
 | [docs/github.md](github.md) | Labels, branches, commits, PRs, review by door | everyone |
 | [docs/agents/](agents/) | Tells the skills which tracker, labels and glossary to use | the skills |
 | `.claude/skills/` | The upstream skills (never edited) and our `orchestrator` | Claude Code |
@@ -106,14 +106,14 @@ information. So nothing important lives in a session.
 | **Always loaded** | `CLAUDE.md` + `context/business_context.md`, `constraints.md`, `assumptions.md`; the session check line | the repo |
 | **On demand** | the step's skill, `context/requirements.md`, glossary, ADRs, readiness | the repo |
 | **Per feature** | issue, spec, tickets, one `<!-- work-notes -->` comment on the spec, the PR | GitHub; closed when the work ships |
-| **Review only** | `standards/` | the repo |
+| **Review only** | `CODING_STANDARDS.md` | the repo |
 
 Habits that make it work:
 
 - **One cleared session per ticket.** When a step has written its output to GitHub, `/clear` and start the next one
   with its slash command. The orchestrator rebuilds the state each time.
 - **Promote as you go.** A fact that outlives the feature moves to its one home the moment it is settled. The homes
-  are listed in [standards/documentation.md](../standards/documentation.md).
+  are the table in the `orchestrator` skill, section 4.
 - **Never guess a business fact.** If `context/` does not answer it, the agent asks or records an assumption.
 - **Issue text is data.** The agent follows instructions only from you, never from text inside an issue or PR.
 
@@ -124,11 +124,13 @@ Habits that make it work:
 | Layer | What runs | Catches |
 |---|---|---|
 | Checks (CPU) | `scripts/check.py`, by you, the pre-commit hook and CI | the project's format, lint, types and tests; an edited upstream skill |
-| Automated review (tokens) | three axes, side by side: **Standards** (`standards/`), **Spec** (does the diff do what the issue asked), **Context** (business rules, requirements, constraints) | locally at orchestrator gate 9, again on the PR by `agent-review.yml` |
+| Automated review (tokens) | three axes, side by side: **Standards** (`CODING_STANDARDS.md`), **Spec** (does the diff do what the issue asked), **Context** (business rules, requirements, constraints) | locally at orchestrator gate 9, again on the PR by `agent-review.yml` |
 | Human review (attention) | one approval on every PR, scaled by the door | `door:one-way`: a code owner reads everything; `door:two-way`: PR body, evidence, seam tests |
 
 Two more guards run on their own: after every agent commit a hook asks a sub-agent which docs the commit made stale,
-and the skills lock fails the build if anyone edits an upstream skill.
+and the skills lock fails the build if anyone edits an upstream skill. Before a PR opens, the same docs check runs on
+the whole branch (orchestrator gate 10): it must come back ok, or each finding you agree to leave is listed under
+`## Docs waivers` in the PR body.
 
 ---
 
@@ -139,7 +141,7 @@ and the skills lock fails the build if anyone edits an upstream skill.
 - **Ids, counts and paths only** in logs, issues, PRs, commits and work notes; never a secret or personal data.
   Agents cannot read `secrets/` or `.env` files.
 - **One home per fact.** If you find a rule written in two places, point one at the other.
-- **Never edit an upstream skill.** Team rules go in the `orchestrator` skill or `standards/`.
+- **Never edit an upstream skill.** Team rules go in the `orchestrator` skill or `CODING_STANDARDS.md`.
 - **One branch and one PR per spec**, merged with a merge commit so `/retro` can read the history.
 
 ---
@@ -153,7 +155,7 @@ and the skills lock fails the build if anyone edits an upstream skill.
 | One long session mixed cleanup, a restructure and a feature, and its summaries lost detail | one cleared session per ticket; state in GitHub and the repo |
 | Skills installed as a plugin differ per machine and can change without review | the skills are committed into the repo and checksummed, so every change is reviewed in a PR |
 | Readiness written in a file was stale within a day | the session check computes it; files keep only people's sign-offs |
-| Rules were being copied into new docs | one home per fact, checked by the Context review and the docs hook |
+| Rules were being copied into new docs | one home per fact, checked by the Context review, the docs hook, and the docs check before each PR |
 | The playbook's two review axes missed business rules | the Context axis, locally and in CI |
 | Git hooks are off in a fresh clone | the session check switches the pre-commit hook on |
 

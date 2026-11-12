@@ -8,7 +8,7 @@ Coding agents produce better work when they follow a process: agree on the idea,
 
 - **Mandatory skills.** `CLAUDE.md` maps every kind of request (new feature, bug, refactor, review, PR) to a skill. The agent picks the skill itself, says which one it chose, and follows its steps. You never have to remember skill names.
 - **Human gates.** The agent stops for your approval at the points that matter: test seams in the spec, the ticket breakdown, and the merge to `main`.
-- **Shared standards.** `standards/` holds the rules `code-review` enforces, so every agent and every developer reviews against the same rulebook.
+- **Shared standards.** `CODING_STANDARDS.md` holds the rules `code-review` enforces, so every agent and every developer reviews against the same rulebook.
 
 The repo contains no application code. Clone it as the base for a new project, or copy its files into an existing one, then build your product on top of it.
 
@@ -64,14 +64,14 @@ Describe what you want in plain words, for example "I want to add a login page".
 ### Before your first real feature
 
 - Fill in `context/`, starting with `business_context.md`.
-- Read the files in `standards/` and adapt them to your stack.
+- Read `CODING_STANDARDS.md`, adapt it to your stack, and add your project's own rules.
 - Add your stack's format, lint, type and test commands to `PROJECT_STEPS` in `scripts/check.py`, and its toolchain to `.github/workflows/ci.yml`.
 - Name real owners in `.github/CODEOWNERS`, then a repo admin runs `bash scripts/github/bootstrap.sh protection`.
 - Add the `ANTHROPIC_API_KEY` repository secret, so `agent-review` runs on PRs.
 
 ## Updating skills
 
-Upstream skills are never edited by hand (team rules go in `orchestrator/` or `standards/`); `scripts/check.py` enforces it. Update in one reviewed PR:
+Upstream skills are never edited by hand (team rules go in `orchestrator/` or `CODING_STANDARDS.md`); `scripts/check.py` enforces it. Update in one reviewed PR:
 
 ```bash
 npx skills add mattpocock/skills -a claude-code   # installs into .claude/skills/
@@ -92,7 +92,7 @@ python scripts/check.py                  # must end in "green"
 | `docs/agents/` | Issue-tracker, triage-label, and domain-doc config (GitHub by default) |
 | `docs/github.md` | Labels, branches, commits, PRs, review by door |
 | `docs/sdlc-guide.md` | Developer guide: what you type at each step and where state lives |
-| `standards/` | Rules the `code-review` skill enforces |
+| `CODING_STANDARDS.md` | Rules the `code-review` skill enforces, read at review only |
 | `scripts/check.py` | The one check (skills lock, your project steps), run by you, the pre-commit hook and CI |
 | `scripts/readiness.py` | Computed readiness, reported by the session check |
 | `scripts/github/` | `bootstrap.sh` (labels, branch protection) and `session_check.sh` |

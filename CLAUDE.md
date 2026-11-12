@@ -53,8 +53,8 @@ The full gate list (0-15) is in the `orchestrator` skill. Always:
 
 ## Pointers
 
-- **Skills:** upstream skills in `.claude/skills/` are never edited; team rules go in the `orchestrator` skill or `standards/`. Upgrade steps: `README.md`, "Updating skills".
-- **Review rules:** `standards/` is the rulebook `code-review` enforces. While implementing, read only the file for the area you're touching.
+- **Skills:** upstream skills in `.claude/skills/` are never edited; team rules go in the `orchestrator` skill or `CODING_STANDARDS.md`. Upgrade steps: `README.md`, "Updating skills".
+- **Review rules:** `CODING_STANDARDS.md` is the rulebook `code-review` enforces, read at review only.
 - **GitHub:** labels, branches, PRs and review by door are in `docs/github.md`. The developer guide is `docs/sdlc-guide.md`.
 
 ## Agent skills

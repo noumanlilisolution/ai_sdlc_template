@@ -79,7 +79,7 @@ def check_skills_lock() -> int:
     if want != have:
         print(
             "Upstream skills are never edited: put team rules in the orchestrator skill "
-            "or standards/. Upgrading? Run `npx skills add mattpocock/skills`, then "
+            "or CODING_STANDARDS.md. Upgrading? Run `npx skills add mattpocock/skills`, then "
             "check.py --lock-skills, in the same reviewed PR."
         )
         return 1

@@ -12,17 +12,19 @@ What an agent or a new teammate reads **before** planning or building anything. 
 7. [readiness/](readiness/readiness_checklist.md): what must be true before a production change, its state, and
    the sign-offs
 
-`GLOSSARY.md`, `docs/adr/`, `.out-of-scope/` and `standards/` stay at the repo root: the skills read and write
+`GLOSSARY.md`, `docs/adr/`, `.out-of-scope/` and `CODING_STANDARDS.md` stay at the repo root: the skills read and write
 them there.
 
 ## Rules for these files
 
-- **One home per fact** (`DOC-2`). Domain words live in `GLOSSARY.md`, decisions in `docs/adr/`, rejected ideas
-  in `.out-of-scope/`, review rules in `standards/`. These files summarise and point; they never copy a rule.
+- **One home per fact** (`ds-one-home`). Domain words live in `GLOSSARY.md`, decisions in `docs/adr/`, rejected
+  ideas in `.out-of-scope/`, review rules in [CODING_STANDARDS.md](../CODING_STANDARDS.md). These files summarise
+  and point; they never copy a rule.
 - **Never invent.** A fact nobody has confirmed goes in `assumptions.md` or under *Open questions*, with who can
   answer it.
 - **Ids, counts and paths only.** No secrets, no personal data.
-- **Keep it current** (`DOC-7`). A PR that makes one of these files wrong updates it.
+- **Keep it current** (`ds-stale`). A PR that makes one of these files wrong updates it, or waives it in its body
+  (orchestrator gate 10).
 - A computer-checkable fact (branch protection, CI, config switches) is checked at session start by
   `scripts/readiness.py`, never written here.
 - Only people fill in [readiness/approval_status.md](readiness/approval_status.md).
