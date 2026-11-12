@@ -46,7 +46,7 @@ Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 | [docs/agents/](agents/) | Tells the skills which tracker, labels and glossary to use | the skills |
 | `.claude/skills/` | The upstream skills (never edited), our `orchestrator` and `context-review` | Claude Code |
 | [.claude/settings.json](../.claude/settings.json) | Hooks (session check, docs check after commits) and read bans on secrets | Claude Code |
-| [scripts/check.py](../scripts/check.py) | The one check: skills lock, plus the project's format, lint, types and tests | you, the pre-commit hook, CI |
+| [scripts/check.py](../scripts/check.py) | The one check: skills lock, the repo's tests, the knowledge-docs check (F2), plus the project's format, lint, types and tests | you, the pre-commit hook, CI |
 
 `GLOSSARY.md`, `docs/adr/` and `.out-of-scope/` are created by the skills the first time they are needed.
 
@@ -124,7 +124,7 @@ Habits that make it work:
 
 | Layer | What runs | Catches |
 |---|---|---|
-| Checks (CPU) | `scripts/check.py`, by you, the pre-commit hook and CI | the project's format, lint, types and tests; an edited upstream skill |
+| Checks (CPU) | `scripts/check.py`, by you, the pre-commit hook and CI | the project's format, lint, types and tests; an edited upstream skill; a knowledge doc with no known type or a broken reference (F2) |
 | Automated review (tokens) | three axes, side by side: **Standards** (`CODING_STANDARDS.md`), **Spec** (does the diff do what the issue asked), **Context** (business rules, requirements, constraints) | locally at orchestrator gate 9, again on the PR by `agent-review.yml` |
 | Human review (attention) | one approval on every PR, scaled by the door | `door:one-way`: a code owner reads everything; `door:two-way`: PR body, evidence, seam tests |
 
