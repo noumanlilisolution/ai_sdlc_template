@@ -86,7 +86,7 @@ python scripts/check.py                  # must end in "green"
 | Path | Purpose |
 | --- | --- |
 | `CLAUDE.md` | Skill routing, gates, pointers, and the business context; Claude Code loads it every session |
-| `.claude/skills/` | Installed skills, pinned in `skills-lock.json`, plus our `orchestrator` (the gates) |
+| `.claude/skills/` | Installed skills, pinned in `skills-lock.json`, plus our `orchestrator` (the gates) and `context-review` (the Context axis) |
 | `.claude/settings.json` | Claude Code hooks (session check at start, stale-docs check after each commit) and read bans on secrets |
 | `context/` | Business context, requirements, constraints, assumptions, architecture, and go-live readiness |
 | `docs/agents/` | Issue-tracker, triage-label, and domain-doc config (GitHub by default) |

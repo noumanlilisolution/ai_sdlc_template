@@ -43,7 +43,7 @@ Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 | [CODING_STANDARDS.md](../CODING_STANDARDS.md) | The reviewer's judgement calls (tools enforce the mechanical rules) | review only |
 | [docs/github.md](github.md) | Labels, branches, commits, PRs, review by door | everyone |
 | [docs/agents/](agents/) | Tells the skills which tracker, labels and glossary to use | the skills |
-| `.claude/skills/` | The upstream skills (never edited) and our `orchestrator` | Claude Code |
+| `.claude/skills/` | The upstream skills (never edited), our `orchestrator` and `context-review` | Claude Code |
 | [.claude/settings.json](../.claude/settings.json) | Hooks (session check, docs check after commits) and read bans on secrets | Claude Code |
 | [scripts/check.py](../scripts/check.py) | The one check: skills lock, plus the project's format, lint, types and tests | you, the pre-commit hook, CI |
 

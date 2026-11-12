@@ -13,9 +13,18 @@ This skill is the **company layer** over the upstream skills. The upstream skill
 `scripts/check.py` fails when one changes (`scripts/skills.sha256`). Team rules go here, in `CODING_STANDARDS.md`, or in
 `context/`.
 
-Work moves through two shifts. In the **day shift** (gates 1-5) a human and an agent agree what to build. In the
-**night shift** (gates 6-15) an agent builds each ticket, test first, and three layers of brakes stand between its
-output and `main`. A retro turns what the brakes caught into cheaper brakes.
+Work moves through two shifts, named for who drives the work:
+
+- **Day shift** (collaborative, gates 1-5): the human and the agent work side by side, like colleagues in office
+  hours, to decide *what* to build. The agent drafts, researches and asks; the human answers and approves. It ends
+  with an agreed issue, a spec, and a ticket breakdown. No code is written yet.
+- **Night shift** (autonomous, gates 6-15): the agent builds the approved tickets on its own, the way a job runs
+  overnight with nobody watching: one ticket at a time, test first. The human returns only at fixed checkpoints:
+  starting a build, opening the PR, approving it, and merging. Three layers of brakes (section "The five rules",
+  rule 4) stand between the agent's output and `main`.
+
+The handover between shifts is the human's approval of the ticket breakdown (gate 5). A retro turns what the
+brakes caught into cheaper brakes.
 
 ## The five rules
 
@@ -62,18 +71,18 @@ and wait.
 | # | Gate met when | Next step if unmet | Who |
 |---|---|---|---|
 | 0 | The session check says gate 0 met: the labels from `scripts/github/bootstrap.sh` exist and `main` is protected; `docs/agents/*.md` exist | Labels: the session check creates them. Protection: an admin runs `bash scripts/github/bootstrap.sh protection`. Skills config: `/setup-matt-pocock-skills` | *human* |
-| | **Day shift** | | |
+| | **Day shift** (collaborative) | | |
 | 1 | An issue states the problem (Bug or Enhancement template), labelled `needs-triage` | Draft it; create it with `gh` once the human agrees | agent + human |
 | 2 | The issue has one category and one state label besides `needs-triage`; the triage notes say which requirements (F/N), constraints and assumptions (A) it touches | `/triage <issue#>`. Check it against `context/requirements.md` (already required? forbidden by an N row?), `context/constraints.md` and `context/assumptions.md` (does it rest on an open A?). `needs-info`: wait. `wontfix`: stop with a `.out-of-scope/` record. `ready-for-human`: a person builds it. `ready-for-agent`: Agent Brief posted, citing those numbers | *human* |
 | 3 | The human answered **"Shared understanding reached? Confirm."**, and every answer is in its home (section 4) | `/grill-with-docs`; its doc changes become the branch's first commit `docs: ... (#<issue>)`. Triage may waive this for a small bug | *human* |
 | 4 | A spec issue is labelled `ready-for-agent`; the human confirmed its test seams; it names modules and interfaces, no file paths, and cites the requirements it adds or changes | `/to-spec` in the **same session** as the grilling: synthesis, no new interview | *human* |
 | 5 | Tickets exist as sub-issues of the spec with native `blocked by` links; each is a vertical slice, tests included (a prefactor may come first); the human approved the breakdown | `/to-tickets <spec#>`. Horizontal slices ("add the model", "write the tests") are sent back | *human* |
-| | **Night shift** | | |
+| | **Night shift** (autonomous) | | |
 | 6 | You are on branch `<spec#>-<slug>` cut from `main`, and the spec issue has its work-notes comment | Create the branch; post the notes comment ([WORK-NOTES.md](WORK-NOTES.md)) | agent |
 | 7 | Every ticket is built, **one cleared context per ticket**: `tdd` confirmed the seams, one red then green per behaviour, commits end in `(#<ticket>)`. A business fact `context/` does not state was asked, not guessed | `/implement <ticket#>` (or `/implement-spec <spec#>`). A bug starts with `diagnosing-bugs`, so a test goes red on it | *human* starts, agent builds |
 | 8 | `python scripts/check.py` prints `green` (the agent, the pre-commit hook and CI run the same command) | Fix and rerun; a ticket is not done until green | agent |
-| 9 | The **three-axis review** against `main` is clean or every finding is answered | In parallel: `code-review` (Standards and Spec, its own sub-agents) and one **Context** sub-agent briefed with section 7. Report the three axes side by side, never merged. Fixes land as `fix(review): ... (#<ticket>)`; out-of-scope findings become new issues | agent |
-| 10 | The **docs check** (section 8) on the branch's HEAD came back ok, or every finding it still reports is waived in the PR body; a PR is open: body from the `pr` skill, `Closes #<ticket> #<ticket> ...`, exactly one `door:` label; CI `check` and `agent-review` green | Before `gh pr create`: run the docs check; fix each finding in a `docs: ... (#<ticket>)` commit and rerun until ok. A finding the human agrees to leave goes under `## Docs waivers` in the body. Then write the body with `pr`; push and open the PR when the human says so | agent + human |
+| 9 | The **three-axis review** against `main` is clean or every finding is answered | In parallel: `code-review` (Standards and Spec, its own sub-agents) and a sub-agent running `context-review` (the Context axis). Report the three axes side by side, never merged. Fixes land as `fix(review): ... (#<ticket>)`; out-of-scope findings become new issues | agent |
+| 10 | The **docs check** (section 7) on the branch's HEAD came back ok, or every finding it still reports is waived in the PR body; a PR is open: body from the `pr` skill, `Closes #<ticket> #<ticket> ...`, exactly one `door:` label; CI `check` and `agent-review` green | Before `gh pr create`: run the docs check; fix each finding in a `docs: ... (#<ticket>)` commit and rerun until ok. A finding the human agrees to leave goes under `## Docs waivers` in the body. Then write the body with `pr`; push and open the PR when the human says so | agent + human |
 | 11 | A code owner approved, scaled by the door (`docs/github.md`) | Answer review comments with commits; you do not approve | human |
 | 12 | Everything durable is **promoted** (section 4) and committed on the branch; the work notes say `closed` | Promote, commit, then close the notes | agent |
 | 13 | The PR is merged with a merge commit; QA passed as `context/readiness/readiness_checklist.md` defines it; QA findings filed as new issues; `context/readiness/readiness_report.md` updated with the evidence; the spec and the request issue closed by hand (the work notes close with the spec) | Hand over the merge and the QA steps. You do not merge | human |
@@ -120,7 +129,7 @@ A home holds the fact; every other file points at it.
 | A new document every agent must find | one pointer line in `CLAUDE.md` (pointers only, never the rule itself) |
 | How we use GitHub, labels, branches | `docs/github.md` |
 
-After each commit, a hook runs the docs check (section 8) on that one commit; fix what it flags in the next
+After each commit, a hook runs the docs check (section 7) on that one commit; fix what it flags in the next
 commit. Whatever is still open when the PR is due stops gate 10.
 
 ## 5. Context hygiene
@@ -137,22 +146,7 @@ commit. Whatever is still open when the PR is due stops gate 10.
 End every run with three lines: **State** (branch, spec, tickets, PR, work notes), **Gate** (the first unmet gate
 and what is missing), **Next** (the exact command or action, and who runs it).
 
-## 7. Context review
-
-The third review axis, run at gate 9 by a sub-agent and on every PR by `agent-review.yml`. Brief it with the diff
-command (`git diff origin/main...HEAD`), the commit list and the spec issue. It reads `context/` (all of it,
-`readiness/` included) and reports, quoting the context line for each finding:
-
-1. what the diff does that contradicts the business context, a requirement (F/N) or a constraint;
-2. any business fact the diff relies on that `context/` does not state (it belongs in `assumptions.md` or
-   *Open questions*, not in code);
-3. any `context/` file the diff makes wrong or incomplete without updating it, including a new must / must never
-   with no row in `requirements.md`;
-4. any sign-off in `context/readiness/approval_status.md` changed by an agent.
-
-Under 300 words, ids and paths only. It does not repeat the Standards or Spec axes.
-
-## 8. Docs check
+## 7. Docs check
 
 Run by one sub-agent: at gate 10 on the whole branch before `gh pr create`, and by the commit hook in
 `.claude/settings.json` on each commit. Brief it with the change (`git diff origin/main...HEAD` and the commit

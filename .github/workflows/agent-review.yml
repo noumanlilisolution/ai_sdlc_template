@@ -40,7 +40,7 @@ jobs:
             commit messages and read it with gh. Report what the spec asked for that is
             missing or wrong, and anything the diff does that it did not ask for.
 
-            Context: follow "## 7. Context review" in .claude/skills/orchestrator/SKILL.md
+            Context: follow the steps in .claude/skills/context-review/SKILL.md
             (the same instructions the local review uses).
 
             Post ONE comment on the PR with "## Standards", "## Spec" and "## Context"
