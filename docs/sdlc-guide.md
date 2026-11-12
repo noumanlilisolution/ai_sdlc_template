@@ -21,11 +21,12 @@ line, for example:
 
 ```
 Gate 0: labels ok; main protected. pre-commit hook on. Readiness: v1.0 · checkout: sign-offs 0/3 |
-CODEOWNERS names no owner | CI on main: success.
+CODEOWNERS names owners | CI on main: success.
 ```
 
 It creates any missing GitHub label, switches on the pre-commit hook for your clone, and reports what a computer can
-check about readiness. Nothing for you to do unless it says so.
+check about readiness. Nothing for you to do unless it says so. The template ships `.github/CODEOWNERS` with a dummy
+owner (`@placeholder-code-owner`): replace it with your real code owner before branch protection.
 
 Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 
