@@ -85,9 +85,10 @@ python scripts/check.py                  # must end in "green"
 
 The files agents plan and review against (`context/*.md`, `context/readiness/*.md`, `docs/adr/*.md`,
 `.out-of-scope/*.md`, `GLOSSARY.md`) are **OKF-shaped**, after Google's
-[Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) v0.2. A knowledge-docs step
-of `scripts/check.py` will enforce requirement F2. **It is planned (spec #3) and not built yet**; the rules below are
-what it will check:
+[Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) v0.2. The knowledge-docs step
+of `scripts/check.py` (`scripts/okf_check.py`) enforces requirement F2. **It is being built (spec #3)**: today it
+checks path-default types only; frontmatter, ids and links land with tickets #6-#8. The rules below are the full
+target:
 
 - **Type is inferred from the path; frontmatter is optional.** A frontmatter `type:` overrides the path default.
   The known types are `Business Context`, `Requirements`, `Constraints`, `Assumptions`, `Architecture`, `Hub`,
@@ -111,7 +112,9 @@ what it will check:
 | `docs/github.md` | Labels, branches, commits, PRs, review by door |
 | `docs/sdlc-guide.md` | Developer guide: what you type at each step and where state lives |
 | `CODING_STANDARDS.md` | Rules the `code-review` skill enforces, read at review only |
-| `scripts/check.py` | The one check (skills lock, your project steps), run by you, the pre-commit hook and CI |
+| `scripts/check.py` | The one check (skills lock, tests, knowledge docs, your project steps), run by you, the pre-commit hook and CI |
+| `scripts/okf_check.py` | The knowledge-docs check (F2; section "Knowledge docs" above) |
+| `tests/` | Tests for the repo's own scripts (standard-library `unittest`), run by `scripts/check.py` |
 | `scripts/readiness.py` | Computed readiness, reported by the session check |
 | `scripts/github/` | `bootstrap.sh` (labels, branch protection) and `session_check.sh` |
 | `.githooks/pre-commit` | Runs `scripts/check.py` before every commit |

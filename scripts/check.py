@@ -36,7 +36,10 @@ OURS = {"orchestrator", "context-review"}  # skill folders that are not from ups
 #   ("lint", [PY, "-m", "ruff", "check", "."]),
 #   ("types", [PY, "-m", "mypy"]),
 #   ("tests", [PY, "-m", "pytest"]),
-PROJECT_STEPS: list[tuple[str, list[str]]] = []
+PROJECT_STEPS: list[tuple[str, list[str]]] = [
+    ("tests", [PY, "-m", "unittest", "discover", "-s", "tests", "-t", "."]),
+    ("knowledge docs", [PY, str(ROOT / "scripts" / "okf_check.py")]),  # F2, spec #3
+]
 
 
 def _skill_files() -> list[Path]:
