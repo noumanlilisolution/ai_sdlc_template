@@ -314,6 +314,39 @@ class Links(unittest.TestCase):
         self.assertEqual(links(body), [f"{REQ}:5: broken link 'missing-2.md'"])
 
 
+class ReviewRegressions(unittest.TestCase):
+    """False failures and leaks found by the three-axis review of spec #3."""
+
+    def test_footnote_definitions_are_not_links(self) -> None:
+        self.assertEqual(links("Text[^1].\n\n[^1]: See the note below.\n"), [])
+
+    def test_parentheses_inside_a_link_target_are_kept(self) -> None:
+        self.assertEqual(links("[y](../docs/a_(1).md)\n", **{"docs/a_(1).md": "# A\n"}), [])
+
+    def test_a_comment_after_a_value_is_dropped(self) -> None:
+        self.assertEqual(check({"context/roadmap.md": "---\ntype: Hub # pointer file\n---\n"}), [])
+
+    def test_a_broken_link_prints_its_path_without_query_or_anchor(self) -> None:
+        problems = links("[x](missing.md?key=abc123#part)\n")
+        self.assertEqual(problems, [f"{REQ}:1: broken link 'missing.md'"])
+
+    def test_a_fence_indented_under_a_list_item_is_skipped(self) -> None:
+        body = "- item\n\n    ```\n    [x](missing.md)\n    ```\n"
+        self.assertEqual(links(body), [])
+
+    def test_protocol_relative_links_are_skipped(self) -> None:
+        self.assertEqual(links("[x](//example.com/a)\n"), [])
+
+    def test_frontmatter_values_are_not_scanned_for_links(self) -> None:
+        self.assertEqual(links("---\nsource: '[x](nope.md)'\n---\n# R\n"), [])
+
+    def test_an_uppercase_md_suffix_is_in_scope(self) -> None:
+        self.assertEqual(
+            check({"context/Notes.MD": "# N\n"}),
+            ["context/Notes.MD:1: no type (add frontmatter type or a path mapping)"],
+        )
+
+
 class CommandLine(unittest.TestCase):
     def run_cli(self, files: Files) -> subprocess.CompletedProcess[str]:
         repo = Repo(files)

@@ -43,14 +43,15 @@ KNOWN_TYPES = frozenset(TYPE_BY_PATH.values()) | frozenset(TYPE_BY_FOLDER.values
 
 KEY_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)[ \t]*:(.*)\Z")  # splits on the first colon
 ID_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*\Z")
+BOM = chr(0xFEFF)
 
 SCHEME_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:")  # http:, mailto:, ...: not a file link
-FENCE_RE = re.compile(r" {0,3}(`{3,}|~{3,})")
+FENCE_RE = re.compile(r"[ \t]*(`{3,}|~{3,})")  # any indent: fences nest under list items
 INLINE_CODE_RE = re.compile(r"(`+).*?\1")
 INLINE_LINK_RE = re.compile(  # ](target) or ](target "title"); also matches image links
-    r"\]\(\s*(<[^>]*>|[^\s)]+)(?:\s+(?:\"[^\"]*\"|'[^']*'|\([^)]*\)))?\s*\)"
+    r"\]\(\s*(<[^>]*>|(?:[^\s()]|\([^\s()]*\))+)(?:\s+(?:\"[^\"]*\"|'[^']*'|\([^)]*\)))?\s*\)"
 )
-REF_DEF_RE = re.compile(r" {0,3}\[[^\]]+\]:\s*(<[^>]*>|\S+)")  # [ref]: target
+REF_DEF_RE = re.compile(r" {0,3}\[(?!\^)[^\]]+\]:\s*(<[^>]*>|\S+)")  # [ref]: target; not [^note]:
 
 
 def _docs(root: Path) -> list[str]:
@@ -60,7 +61,7 @@ def _docs(root: Path) -> list[str]:
         base = root / folder
         if base.is_dir():
             found += [
-                f"{folder}/{p.name}" for p in base.iterdir() if p.is_file() and p.suffix == ".md"
+                f"{folder}/{p.name}" for p in base.iterdir() if p.is_file() and p.suffix.lower() == ".md"
             ]
     return sorted(found)
 
@@ -84,6 +85,17 @@ def _unquote(value: str) -> str:
     if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
         return value[1:-1]
     return value
+
+
+def _lines(text: str) -> list[str]:
+    return text.lstrip(BOM).splitlines()
+
+
+def _frontmatter_end(lines: list[str]) -> Optional[int]:
+    """Index of the closing `---`; 0 when there is no frontmatter block; None when unclosed."""
+    if not lines or lines[0].rstrip() != "---":
+        return 0
+    return next((i for i in range(1, len(lines)) if lines[i].rstrip() == "---"), None)
 
 
 class Frontmatter:
@@ -110,10 +122,8 @@ def _frontmatter(text: str) -> Frontmatter:
     `related:` they must be `- id` items, indented or not.
     """
     found = Frontmatter()
-    lines = text.lstrip("\ufeff").splitlines()
-    if not lines or lines[0].rstrip() != "---":
-        return found
-    end = next((i for i in range(1, len(lines)) if lines[i].rstrip() == "---"), None)
+    lines = _lines(text)
+    end = _frontmatter_end(lines)
     if end is None:
         raise Invalid(1)
     key: Optional[str] = None  # the last top-level key; None before the first
@@ -137,6 +147,8 @@ def _frontmatter(text: str) -> Frontmatter:
         if match is None or match.group(1) in found.fields:
             raise Invalid(number)
         key, raw = match.group(1), match.group(2).strip()
+        if not raw.startswith(("'", '"')):
+            raw = re.split(r"\s#", raw, maxsplit=1)[0].strip()  # drop a trailing # comment
         bare = raw == ""
         value = _unquote(raw)
         if key in ("type", "id") and not value:
@@ -151,9 +163,14 @@ Problem = Tuple[str, int, str]  # (path, line, reason)
 
 
 def _link_targets(text: str) -> Iterator[tuple[int, str]]:
-    """(line, target) of each inline, image and reference-definition link outside code."""
+    """(line, target) of each inline, image and reference-definition link in the body.
+
+    The frontmatter block and code (fenced or inline) are skipped.
+    """
+    lines = _lines(text)
+    body = (_frontmatter_end(lines) or -1) + 1  # first body index; an unclosed block is body
     fence = ""  # the open code fence (``` or ~~~ run); empty when outside one
-    for number, line in enumerate(text.lstrip("\ufeff").splitlines(), start=1):
+    for number, line in enumerate(lines[body:], start=body + 1):
         stripped = line.strip()
         if fence:
             if stripped and set(stripped) == {fence[0]} and len(stripped) >= len(fence):
@@ -189,9 +206,10 @@ def _exists_exactly(root: Path, rel: str) -> bool:
 def _link_problem(root: Path, rel: str, raw: str) -> Optional[str]:
     """Why a link target does not resolve, or None when it does or is not a file link."""
     target = raw[1:-1] if raw.startswith("<") and raw.endswith(">") else raw
-    if SCHEME_RE.match(target):
-        return None
-    path = unquote(re.split(r"[?#]", target, maxsplit=1)[0])
+    if SCHEME_RE.match(target) or target.startswith("//"):
+        return None  # a web or protocol-relative link, not a file in the repo
+    shown = re.split(r"[?#]", target, maxsplit=1)[0]  # never print a query or anchor
+    path = unquote(shown)
     if not path:
         return None  # a same-page #anchor
     if path.startswith("/"):
@@ -200,9 +218,9 @@ def _link_problem(root: Path, rel: str, raw: str) -> Optional[str]:
         joined = posixpath.join(posixpath.dirname(rel), path)
     resolved = posixpath.normpath(joined)
     if resolved == ".." or resolved.startswith("../"):
-        return f"link '{target}' leaves the repo"
+        return f"link '{shown}' leaves the repo"
     if resolved != "." and not _exists_exactly(root, resolved):
-        return f"broken link '{target}'"
+        return f"broken link '{shown}'"
     return None
 
 
@@ -221,6 +239,8 @@ def _read(root: Path, rel: str) -> tuple[list[Problem], Optional[Frontmatter]]:
         text = (root / rel).read_text(encoding="utf-8")
     except UnicodeDecodeError:
         return [(rel, 1, "not UTF-8 text")], None
+    except OSError:
+        return [(rel, 1, "unreadable file")], None  # never the exception text
     problems = _link_problems(root, rel, text)
     try:
         found = _frontmatter(text)
@@ -254,7 +274,9 @@ def check_knowledge_docs(root: Path) -> list[str]:
             declared.setdefault(doc_id, []).append((rel, line))
         related += [(rel, related_id, line) for related_id, line in found.related]
     for doc_id, places in declared.items():
-        for rel, line in places if len(places) > 1 else []:
+        if len(places) < 2:
+            continue
+        for rel, line in places:
             others = ", ".join(other for other, _ in places if other != rel)
             problems.append((rel, line, f"duplicate id '{doc_id}' (also in {others})"))
     for rel, related_id, line in related:
