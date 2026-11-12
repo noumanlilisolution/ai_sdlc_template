@@ -28,6 +28,7 @@ COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)  # example sections are commen
 SECTION_RE =re.compile(r"^## (.+?)\s*$")
 ROW_RE = re.compile(r"^\|([^|]*)\|([^|]*)\|([^|]*)\|")
 STATUS_COLUMN = 3  # Approval | Approver (role) | Status | Date | Where
+PLACEHOLDER_OWNER = "@placeholder-code-owner"  # the template's dummy in .github/CODEOWNERS
 
 
 def _approval_lines() -> list[str]:
@@ -63,6 +64,8 @@ def _codeowners_line() -> str:
         for line in text.splitlines()
         if line.strip() and not line.lstrip().startswith("#") and "@" in line
     ]
+    if owners and all(PLACEHOLDER_OWNER in line for line in owners):
+        return "CODEOWNERS names only the placeholder owner"
     return "CODEOWNERS names owners" if owners else "CODEOWNERS names no owner"
 
 
