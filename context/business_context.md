@@ -25,3 +25,5 @@
 ## Open questions (business owner to answer)
 
 - <question> (who can answer)
+- Who is the code owner? `.github/CODEOWNERS` names the dummy `@placeholder-code-owner`, so no real person
+  reviews one-way-door changes yet, and branch protection waits on it. (repo maintainer)

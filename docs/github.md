@@ -63,4 +63,5 @@ Committed in `.claude/skills/`, never edited; team rules live in the `orchestrat
 | Business context | `context/`, a third review axis (Context), and a production-change gate with people-only sign-offs | Never guess a business fact; the two upstream axes miss business rules |
 | Session check | Every session: creates missing labels, switches on the pre-commit hook, reports protection and computed readiness | A fact a computer can check is checked, not written down; git hooks are off in a fresh clone |
 | Skills lock | Upstream skill files are checksummed; an edit fails `check.py` | An intended change shows up in the PR, so it is never silent |
+| Knowledge-docs check | `check.py` fails on a knowledge doc with no known type or a broken reference (F2; README "Knowledge docs") | Agents cite these docs at triage, spec and review; a dangling reference otherwise goes unnoticed |
 | Docs drift | A Claude Code hook after each agent commit, and a branch-wide docs check before `gh pr create` (orchestrator gate 10), ask a sub-agent which docs are stale | Rules get copied into new docs and go stale; a fix promised for "the next commit" is easy to forget |

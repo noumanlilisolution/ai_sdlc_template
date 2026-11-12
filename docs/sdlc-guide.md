@@ -21,11 +21,13 @@ line, for example:
 
 ```
 Gate 0: labels ok; main protected. pre-commit hook on. Readiness: v1.0 · checkout: sign-offs 0/3 |
-CODEOWNERS names no owner | CI on main: success.
+CODEOWNERS names owners | CI on main: success.
 ```
 
 It creates any missing GitHub label, switches on the pre-commit hook for your clone, and reports what a computer can
-check about readiness. Nothing for you to do unless it says so.
+check about readiness. Nothing for you to do unless it says so. The template ships `.github/CODEOWNERS` with a dummy
+owner (`@placeholder-code-owner`), and until you replace it with your real code owner the check reports
+`CODEOWNERS names only the placeholder owner`. Replace it before branch protection.
 
 Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 
@@ -43,11 +45,12 @@ Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 | [CODING_STANDARDS.md](../CODING_STANDARDS.md) | The reviewer's judgement calls (tools enforce the mechanical rules) | review only |
 | [docs/github.md](github.md) | Labels, branches, commits, PRs, review by door | everyone |
 | [docs/agents/](agents/) | Tells the skills which tracker, labels and glossary to use | the skills |
-| `.claude/skills/` | The upstream skills (never edited) and our `orchestrator` | Claude Code |
+| `.claude/skills/` | The upstream skills (never edited), our `orchestrator` and `context-review` | Claude Code |
 | [.claude/settings.json](../.claude/settings.json) | Hooks (session check, docs check after commits) and read bans on secrets | Claude Code |
-| [scripts/check.py](../scripts/check.py) | The one check: skills lock, plus the project's format, lint, types and tests | you, the pre-commit hook, CI |
+| [scripts/check.py](../scripts/check.py) | The one check: skills lock, the repo's tests, the knowledge-docs check (F2), plus the project's format, lint, types and tests | you, the pre-commit hook, CI |
 
-`GLOSSARY.md`, `docs/adr/` and `.out-of-scope/` are created by the skills the first time they are needed.
+`GLOSSARY.md`, `docs/adr/` and `.out-of-scope/` live at the repo root; the skills add glossary terms, ADRs and
+out-of-scope records to them the first time each is needed.
 
 ---
 
@@ -123,7 +126,7 @@ Habits that make it work:
 
 | Layer | What runs | Catches |
 |---|---|---|
-| Checks (CPU) | `scripts/check.py`, by you, the pre-commit hook and CI | the project's format, lint, types and tests; an edited upstream skill |
+| Checks (CPU) | `scripts/check.py`, by you, the pre-commit hook and CI | the project's format, lint, types and tests; an edited upstream skill; a knowledge doc with no known type or a broken reference (F2) |
 | Automated review (tokens) | three axes, side by side: **Standards** (`CODING_STANDARDS.md`), **Spec** (does the diff do what the issue asked), **Context** (business rules, requirements, constraints) | locally at orchestrator gate 9, again on the PR by `agent-review.yml` |
 | Human review (attention) | one approval on every PR, scaled by the door | `door:one-way`: a code owner reads everything; `door:two-way`: PR body, evidence, seam tests |
 

@@ -81,19 +81,41 @@ python scripts/check.py                  # must end in "green"
 
 `skills-lock.json` pins the installed versions; `scripts/skills.sha256` checksums every upstream skill file.
 
+## Knowledge docs
+
+The files agents plan and review against (`context/*.md`, `context/readiness/*.md`, `docs/adr/*.md`,
+`.out-of-scope/*.md`, `GLOSSARY.md`) are **OKF-shaped**, after Google's
+[Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) v0.2. The knowledge-docs step
+of `scripts/check.py` (`scripts/okf_check.py`) enforces requirement F2 and prints one `path:line: reason` per
+problem, or `okf bundle: N docs ok`:
+
+- **Type is inferred from the path; frontmatter is optional.** A frontmatter `type:` overrides the path default.
+  The known types are `Business Context`, `Requirements`, `Constraints`, `Assumptions`, `Architecture`, `Hub`,
+  `Readiness`, `Decision`, `Out of Scope` and `Glossary`, matched exactly. A new doc with neither fails with
+  `no type`: give it a frontmatter `type:` or add its path to the map in `scripts/okf_check.py`.
+- **Ids are optional.** An `id:` is lower-kebab-case and unique across all these folders; `related:` lists other
+  docs' ids (`[a, b]` or `- a` lines).
+- **Links must resolve**: inline, image and reference-style links, outside code. The target must exist with exact
+  case and stay inside the repo. A link starting with `/` resolves from the **repo root**, not a bundle root: the
+  repo is not one OKF bundle.
+- **Nothing is exported.** As stored, these files are not a conformant OKF bundle (OKF wants `type` in every file);
+  only the check's view is. Anything outside the repo that reads them needs an export step first, and none exists.
+
 ## What's in the repo
 
 | Path | Purpose |
 | --- | --- |
 | `CLAUDE.md` | Skill routing, gates, pointers, and the business context; Claude Code loads it every session |
-| `.claude/skills/` | Installed skills, pinned in `skills-lock.json`, plus our `orchestrator` (the gates) |
+| `.claude/skills/` | Installed skills, pinned in `skills-lock.json`, plus our `orchestrator` (the gates) and `context-review` (the Context axis) |
 | `.claude/settings.json` | Claude Code hooks (session check at start, stale-docs check after each commit) and read bans on secrets |
 | `context/` | Business context, requirements, constraints, assumptions, architecture, and go-live readiness |
 | `docs/agents/` | Issue-tracker, triage-label, and domain-doc config (GitHub by default) |
 | `docs/github.md` | Labels, branches, commits, PRs, review by door |
 | `docs/sdlc-guide.md` | Developer guide: what you type at each step and where state lives |
 | `CODING_STANDARDS.md` | Rules the `code-review` skill enforces, read at review only |
-| `scripts/check.py` | The one check (skills lock, your project steps), run by you, the pre-commit hook and CI |
+| `scripts/check.py` | The one check (skills lock, tests, knowledge docs, your project steps), run by you, the pre-commit hook and CI |
+| `scripts/okf_check.py` | The knowledge-docs check (F2; section "Knowledge docs" above) |
+| `tests/` | Tests for the repo's own scripts (standard-library `unittest`), run by `scripts/check.py` |
 | `scripts/readiness.py` | Computed readiness, reported by the session check |
 | `scripts/github/` | `bootstrap.sh` (labels, branch protection) and `session_check.sh` |
 | `.githooks/pre-commit` | Runs `scripts/check.py` before every commit |

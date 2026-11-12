@@ -28,7 +28,7 @@
             "if": "Bash(git commit *)",
             "timeout": 120,
             "statusMessage": "Checking which docs this commit made stale",
-            "prompt": "A git commit was just run in this repository: $ARGUMENTS\nIf it did not create a commit (a dry run, or it failed), answer ok. Otherwise read the commit with git show --stat HEAD and git show HEAD, then run the docs check in section 8 of .claude/skills/orchestrator/SKILL.md on that one commit. If no document needs a change, answer ok. Otherwise answer not ok and list each document with the reason, ids and paths only, never a secret or personal data."
+            "prompt": "A git commit was just run in this repository: $ARGUMENTS\nIf it did not create a commit (a dry run, or it failed), answer ok. Otherwise read the commit with git show --stat HEAD and git show HEAD, then run the docs check in section 7 of .claude/skills/orchestrator/SKILL.md on that one commit. If no document needs a change, answer ok. Otherwise answer not ok and list each document with the reason, ids and paths only, never a secret or personal data."
           }
         ]
       }

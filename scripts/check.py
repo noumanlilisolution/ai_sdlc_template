@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PY = sys.executable
 SKILLS = ROOT / ".claude" / "skills"
 SKILLS_LOCK = ROOT / "scripts" / "skills.sha256"
-OURS = {"orchestrator"}  # skill folders that are not from upstream
+OURS = {"orchestrator", "context-review"}  # skill folders that are not from upstream
 
 # The project's own checks, in order: (name, command). Each runs from the repo root and
 # fails the check on a non-zero exit. Examples:
@@ -36,7 +36,10 @@ OURS = {"orchestrator"}  # skill folders that are not from upstream
 #   ("lint", [PY, "-m", "ruff", "check", "."]),
 #   ("types", [PY, "-m", "mypy"]),
 #   ("tests", [PY, "-m", "pytest"]),
-PROJECT_STEPS: list[tuple[str, list[str]]] = []
+PROJECT_STEPS: list[tuple[str, list[str]]] = [
+    ("tests", [PY, "-m", "unittest", "discover", "-s", "tests", "-t", "."]),
+    ("knowledge docs", [PY, str(ROOT / "scripts" / "okf_check.py")]),  # F2, spec #3
+]
 
 
 def _skill_files() -> list[Path]:

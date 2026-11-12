@@ -34,7 +34,7 @@ A question that changes no code or documents gets a direct answer, with no skill
 | Facts from external docs or APIs | `research` | |
 | Incoming issue reports | `triage` | |
 | Work too big for one session | `wayfinder` | |
-| Reviewing a diff, branch, or PR | `code-review` | |
+| Reviewing a diff, branch, or PR | `code-review` and `context-review`, in parallel | |
 | Writing a PR description | `pr` | |
 | A session running out of context, or ending mid-task | `handoff` | |
 | Looking back on a finished feature or a bad session | `retro` | |
