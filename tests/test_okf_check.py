@@ -146,7 +146,7 @@ class InvalidFrontmatter(unittest.TestCase):
 
 class FrontmatterTolerance(unittest.TestCase):
     def test_bom_and_crlf_line_endings_parse(self) -> None:
-        text = "﻿---\r\ntype: Hub\r\n---\r\n# Doc\r\n".encode("utf-8")
+        text = "\ufeff---\r\ntype: Hub\r\n---\r\n# Doc\r\n".encode("utf-8")
         self.assertEqual(check({"context/roadmap.md": text}), [])
 
     def test_a_doc_that_is_not_utf8_fails_without_printing_it(self) -> None:
@@ -189,6 +189,61 @@ class FrontmatterTolerance(unittest.TestCase):
 
     def test_a_doc_without_frontmatter_is_valid(self) -> None:
         self.assertEqual(check({"GLOSSARY.md": "# Glossary\n\n---\n\ntext\n"}), [])
+
+
+ADR = "docs/adr/0001-x.md"
+
+
+class IdsAndRelated(unittest.TestCase):
+    def test_related_ids_resolve_across_folders(self) -> None:
+        self.assertEqual(
+            check(
+                {
+                    ADR: "---\nid: adr-0001\nrelated: [glossary, req-2]\n---\n",
+                    "GLOSSARY.md": "---\nid: glossary\n---\n",
+                    "context/requirements.md": "---\nid: req-2\nrelated:\n- adr-0001\n---\n",
+                }
+            ),
+            [],
+        )
+
+    def test_an_indented_related_block_list_is_read(self) -> None:
+        self.assertEqual(
+            check({ADR: "---\nid: adr-0001\nrelated:\n  - missing-one\n---\n"}),
+            [f"{ADR}:4: related id 'missing-one' not found"],
+        )
+
+    def test_an_unresolved_id_in_a_flow_list_fails_on_the_related_line(self) -> None:
+        self.assertEqual(
+            check({ADR: "---\ntype: Decision\nrelated: [\"nope\", glossary]\n---\n",
+                   "GLOSSARY.md": "---\nid: glossary\n---\n"}),
+            [f"{ADR}:3: related id 'nope' not found"],
+        )
+
+    def test_an_id_that_is_not_lower_kebab_case_fails(self) -> None:
+        for bad in ("ADR-1", "adr_1", "adr--1", "-adr", "adr-"):
+            with self.subTest(bad=bad):
+                self.assertEqual(
+                    check({ADR: f"---\nid: {bad}\n---\n"}),
+                    [f"{ADR}:2: id '{bad}' is not lower-kebab-case"],
+                )
+
+    def test_a_duplicate_id_fails_on_every_file_that_declares_it(self) -> None:
+        self.assertEqual(
+            check({ADR: "---\nid: same\n---\n", "GLOSSARY.md": "---\n\nid: same\n---\n"}),
+            [
+                "GLOSSARY.md:3: duplicate id 'same' (also in docs/adr/0001-x.md)",
+                f"{ADR}:2: duplicate id 'same' (also in GLOSSARY.md)",
+            ],
+        )
+
+    def test_an_empty_id_is_invalid_frontmatter(self) -> None:
+        self.assertEqual(check({ADR: "---\nid: ''\n---\n"}), [f"{ADR}:2: invalid frontmatter"])
+
+    def test_a_scalar_related_value_is_invalid_frontmatter(self) -> None:
+        self.assertEqual(
+            check({ADR: "---\nrelated: glossary\n---\n"}), [f"{ADR}:2: invalid frontmatter"]
+        )
 
 
 class CommandLine(unittest.TestCase):
