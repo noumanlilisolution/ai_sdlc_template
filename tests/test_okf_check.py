@@ -246,6 +246,74 @@ class IdsAndRelated(unittest.TestCase):
         )
 
 
+REQ = "context/requirements.md"
+
+
+def links(body: str, **extra: str) -> list[str]:
+    """Check the requirements doc holding `body`, beside a few real targets."""
+    files: Files = {REQ: body, "GLOSSARY.md": "# G\n", "docs/adr/0001-x.md": "# A\n"}
+    files.update({"scripts/check.py": "", "docs/a b.md": "# space\n"})
+    files.update(extra)
+    return check(files)
+
+
+class Links(unittest.TestCase):
+    def test_a_link_to_a_missing_file_fails_on_its_line(self) -> None:
+        self.assertEqual(
+            links("# R\n\nSee [the ADR](../docs/adr/0009-gone.md).\n"),
+            [f"{REQ}:3: broken link '../docs/adr/0009-gone.md'"],
+        )
+
+    def test_links_to_existing_files_and_folders_pass(self) -> None:
+        body = "[g](../GLOSSARY.md) [code](../scripts/check.py) [adr folder](../docs/adr)\n"
+        self.assertEqual(links(body), [])
+
+    def test_a_leading_slash_resolves_from_the_repo_root(self) -> None:
+        self.assertEqual(links("[g](/GLOSSARY.md) [x](/context/GLOSSARY.md)\n"),
+                         [f"{REQ}:1: broken link '/context/GLOSSARY.md'"])
+
+    def test_a_link_differing_only_in_case_fails(self) -> None:
+        self.assertEqual(links("[g](../Glossary.md)\n"), [f"{REQ}:1: broken link '../Glossary.md'"])
+
+    def test_a_link_leaving_the_repo_fails(self) -> None:
+        self.assertEqual(
+            links("[x](../../outside.md)\n"), [f"{REQ}:1: link '../../outside.md' leaves the repo"]
+        )
+
+    def test_scheme_and_anchor_only_links_are_skipped(self) -> None:
+        body = "[w](https://example.com/x.md) [m](mailto:a@b.c) [h](http://x) [s](#section)\n"
+        self.assertEqual(links(body), [])
+
+    def test_query_anchor_title_and_percent_encoding_are_handled(self) -> None:
+        body = (
+            '[a](../GLOSSARY.md#terms) [b](../GLOSSARY.md?plain=1) [c](../GLOSSARY.md "Title")\n'
+            "[d](../docs/a%20b.md) [e](<../docs/a b.md>)\n"
+        )
+        self.assertEqual(links(body), [])
+
+    def test_image_links_are_checked(self) -> None:
+        self.assertEqual(
+            links("![diagram](img/flow.png)\n"), [f"{REQ}:1: broken link 'img/flow.png'"]
+        )
+
+    def test_reference_style_link_definitions_are_checked(self) -> None:
+        body = "Read [the glossary][g] and [old][o].\n\n[g]: ../GLOSSARY.md \"G\"\n[o]: ../OLD.md\n"
+        self.assertEqual(links(body), [f"{REQ}:4: broken link '../OLD.md'"])
+
+    def test_links_in_code_fences_and_inline_code_are_skipped(self) -> None:
+        body = (
+            "```markdown\n[x](missing-1.md)\n```\n"
+            "~~~\n[x](missing-2.md)\n~~~\n"
+            "Write `[x](missing-3.md)` like this, or ``[x](missing-4.md)``.\n"
+            "[real](missing-5.md)\n"
+        )
+        self.assertEqual(links(body), [f"{REQ}:8: broken link 'missing-5.md'"])
+
+    def test_a_tilde_fence_is_not_closed_by_backticks(self) -> None:
+        body = "~~~\n```\n[x](missing-1.md)\n~~~\n[real](missing-2.md)\n"
+        self.assertEqual(links(body), [f"{REQ}:5: broken link 'missing-2.md'"])
+
+
 class CommandLine(unittest.TestCase):
     def run_cli(self, files: Files) -> subprocess.CompletedProcess[str]:
         repo = Repo(files)

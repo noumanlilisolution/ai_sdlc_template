@@ -8,10 +8,13 @@ Enforces requirement F2 (context/requirements.md); the rules are in spec #3 and 
 
 from __future__ import annotations
 
+import os
+import posixpath
 import re
 import sys
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Iterator, Optional, Tuple
+from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -40,6 +43,14 @@ KNOWN_TYPES = frozenset(TYPE_BY_PATH.values()) | frozenset(TYPE_BY_FOLDER.values
 
 KEY_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_-]*)[ \t]*:(.*)\Z")  # splits on the first colon
 ID_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*\Z")
+
+SCHEME_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:")  # http:, mailto:, ...: not a file link
+FENCE_RE = re.compile(r" {0,3}(`{3,}|~{3,})")
+INLINE_CODE_RE = re.compile(r"(`+).*?\1")
+INLINE_LINK_RE = re.compile(  # ](target) or ](target "title"); also matches image links
+    r"\]\(\s*(<[^>]*>|[^\s)]+)(?:\s+(?:\"[^\"]*\"|'[^']*'|\([^)]*\)))?\s*\)"
+)
+REF_DEF_RE = re.compile(r" {0,3}\[[^\]]+\]:\s*(<[^>]*>|\S+)")  # [ref]: target
 
 
 def _docs(root: Path) -> list[str]:
@@ -139,17 +150,82 @@ def _frontmatter(text: str) -> Frontmatter:
 Problem = Tuple[str, int, str]  # (path, line, reason)
 
 
+def _link_targets(text: str) -> Iterator[tuple[int, str]]:
+    """(line, target) of each inline, image and reference-definition link outside code."""
+    fence = ""  # the open code fence (``` or ~~~ run); empty when outside one
+    for number, line in enumerate(text.lstrip("\ufeff").splitlines(), start=1):
+        stripped = line.strip()
+        if fence:
+            if stripped and set(stripped) == {fence[0]} and len(stripped) >= len(fence):
+                fence = ""
+            continue
+        opener = FENCE_RE.match(line)
+        if opener:
+            fence = opener.group(1)
+            continue
+        line = INLINE_CODE_RE.sub("", line)
+        definition = REF_DEF_RE.match(line)
+        if definition:
+            yield number, definition.group(1)
+            continue
+        for link in INLINE_LINK_RE.finditer(line):
+            yield number, link.group(1)
+
+
+def _exists_exactly(root: Path, rel: str) -> bool:
+    """Whether the repo-relative path exists with this exact case, on any OS."""
+    current = root
+    for part in rel.split("/"):
+        try:
+            names = os.listdir(current)
+        except OSError:
+            return False
+        if part not in names:
+            return False
+        current = current / part
+    return True
+
+
+def _link_problem(root: Path, rel: str, raw: str) -> Optional[str]:
+    """Why a link target does not resolve, or None when it does or is not a file link."""
+    target = raw[1:-1] if raw.startswith("<") and raw.endswith(">") else raw
+    if SCHEME_RE.match(target):
+        return None
+    path = unquote(re.split(r"[?#]", target, maxsplit=1)[0])
+    if not path:
+        return None  # a same-page #anchor
+    if path.startswith("/"):
+        joined = path.lstrip("/")  # repo root: the repo is not one OKF bundle
+    else:
+        joined = posixpath.join(posixpath.dirname(rel), path)
+    resolved = posixpath.normpath(joined)
+    if resolved == ".." or resolved.startswith("../"):
+        return f"link '{target}' leaves the repo"
+    if resolved != "." and not _exists_exactly(root, resolved):
+        return f"broken link '{target}'"
+    return None
+
+
+def _link_problems(root: Path, rel: str, text: str) -> list[Problem]:
+    problems = []
+    for line, raw in _link_targets(text):
+        reason = _link_problem(root, rel, raw)
+        if reason:
+            problems.append((rel, line, reason))
+    return problems
+
+
 def _read(root: Path, rel: str) -> tuple[list[Problem], Optional[Frontmatter]]:
     """The problems a doc has on its own, and its frontmatter when it could be read."""
     try:
         text = (root / rel).read_text(encoding="utf-8")
     except UnicodeDecodeError:
         return [(rel, 1, "not UTF-8 text")], None
+    problems = _link_problems(root, rel, text)
     try:
         found = _frontmatter(text)
     except Invalid as error:
-        return [(rel, error.line, "invalid frontmatter")], None
-    problems: list[Problem] = []
+        return [*problems, (rel, error.line, "invalid frontmatter")], None
     if "type" in found.fields:
         doc_type, line = found.fields["type"]
         if doc_type not in KNOWN_TYPES:

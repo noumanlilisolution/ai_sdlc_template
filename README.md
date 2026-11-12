@@ -86,17 +86,18 @@ python scripts/check.py                  # must end in "green"
 The files agents plan and review against (`context/*.md`, `context/readiness/*.md`, `docs/adr/*.md`,
 `.out-of-scope/*.md`, `GLOSSARY.md`) are **OKF-shaped**, after Google's
 [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) v0.2. The knowledge-docs step
-of `scripts/check.py` (`scripts/okf_check.py`) enforces requirement F2. **It is being built (spec #3)**: today it
-checks types, frontmatter, ids and `related:`; links land with ticket #8. The rules below are the full
-target:
+of `scripts/check.py` (`scripts/okf_check.py`) enforces requirement F2 and prints one `path:line: reason` per
+problem, or `okf bundle: N docs ok`:
 
 - **Type is inferred from the path; frontmatter is optional.** A frontmatter `type:` overrides the path default.
   The known types are `Business Context`, `Requirements`, `Constraints`, `Assumptions`, `Architecture`, `Hub`,
-  `Readiness`, `Decision`, `Out of Scope` and `Glossary`, matched exactly.
+  `Readiness`, `Decision`, `Out of Scope` and `Glossary`, matched exactly. A new doc with neither fails with
+  `no type`: give it a frontmatter `type:` or add its path to the map in `scripts/okf_check.py`.
 - **Ids are optional.** An `id:` is lower-kebab-case and unique across all these folders; `related:` lists other
-  docs' ids.
-- **Links must resolve**, with exact case and inside the repo. A link starting with `/` resolves from the **repo
-  root**, not a bundle root: the repo is not one OKF bundle.
+  docs' ids (`[a, b]` or `- a` lines).
+- **Links must resolve**: inline, image and reference-style links, outside code. The target must exist with exact
+  case and stay inside the repo. A link starting with `/` resolves from the **repo root**, not a bundle root: the
+  repo is not one OKF bundle.
 - **Nothing is exported.** As stored, these files are not a conformant OKF bundle (OKF wants `type` in every file);
   only the check's view is. Anything outside the repo that reads them needs an export step first, and none exists.
 
