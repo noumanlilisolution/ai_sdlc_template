@@ -1,0 +1,4 @@
+# Code owners: GitHub asks them to review every PR touching the paths below.
+# PLACEHOLDER: `@placeholder-code-owner` is a dummy handle. Replace it with a real user or team
+# (e.g. `@org/team`) before an admin runs `bash scripts/github/bootstrap.sh protection`.
+* @placeholder-code-owner
