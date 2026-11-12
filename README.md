@@ -81,6 +81,24 @@ python scripts/check.py                  # must end in "green"
 
 `skills-lock.json` pins the installed versions; `scripts/skills.sha256` checksums every upstream skill file.
 
+## Knowledge docs
+
+The files agents plan and review against (`context/*.md`, `context/readiness/*.md`, `docs/adr/*.md`,
+`.out-of-scope/*.md`, `GLOSSARY.md`) are **OKF-shaped**, after Google's
+[Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) v0.2. A knowledge-docs step
+of `scripts/check.py` will enforce requirement F2. **It is planned (spec #3) and not built yet**; the rules below are
+what it will check:
+
+- **Type is inferred from the path; frontmatter is optional.** A frontmatter `type:` overrides the path default.
+  The known types are `Business Context`, `Requirements`, `Constraints`, `Assumptions`, `Architecture`, `Hub`,
+  `Readiness`, `Decision`, `Out of Scope` and `Glossary`, matched exactly.
+- **Ids are optional.** An `id:` is lower-kebab-case and unique across all these folders; `related:` lists other
+  docs' ids.
+- **Links must resolve**, with exact case and inside the repo. A link starting with `/` resolves from the **repo
+  root**, not a bundle root: the repo is not one OKF bundle.
+- **Nothing is exported.** As stored, these files are not a conformant OKF bundle (OKF wants `type` in every file);
+  only the check's view is. Anything outside the repo that reads them needs an export step first, and none exists.
+
 ## What's in the repo
 
 | Path | Purpose |

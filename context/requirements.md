@@ -8,6 +8,7 @@ Context review cite rows by number (F1, N1).
 | # | The system must | Where |
 |---|---|---|
 | F1 | <behaviour> | <module, ADR or spec> |
+| F2 | `check.py` fails on a knowledge document with an unknown type, invalid frontmatter, a broken link, an unresolved `related:` id, a duplicate id, or an id that isn't lower-kebab-case | `scripts/check.py`, knowledge-docs step (spec #3) |
 
 ## Must never
 
