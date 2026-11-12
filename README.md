@@ -87,7 +87,7 @@ The files agents plan and review against (`context/*.md`, `context/readiness/*.m
 `.out-of-scope/*.md`, `GLOSSARY.md`) are **OKF-shaped**, after Google's
 [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) v0.2. The knowledge-docs step
 of `scripts/check.py` (`scripts/okf_check.py`) enforces requirement F2. **It is being built (spec #3)**: today it
-checks path-default types only; frontmatter, ids and links land with tickets #6-#8. The rules below are the full
+checks types and frontmatter; ids and links land with tickets #7 and #8. The rules below are the full
 target:
 
 - **Type is inferred from the path; frontmatter is optional.** A frontmatter `type:` overrides the path default.
