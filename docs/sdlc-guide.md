@@ -49,7 +49,8 @@ Then run the umbrella check once: `python scripts/check.py` must end in `green`.
 | [.claude/settings.json](../.claude/settings.json) | Hooks (session check, docs check after commits) and read bans on secrets | Claude Code |
 | [scripts/check.py](../scripts/check.py) | The one check: skills lock, the repo's tests, the knowledge-docs check (F2), plus the project's format, lint, types and tests | you, the pre-commit hook, CI |
 
-`GLOSSARY.md`, `docs/adr/` and `.out-of-scope/` are created by the skills the first time they are needed.
+`GLOSSARY.md`, `docs/adr/` and `.out-of-scope/` live at the repo root; the skills add glossary terms, ADRs and
+out-of-scope records to them the first time each is needed.
 
 ---
 

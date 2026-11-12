@@ -1,7 +1,7 @@
 # Readiness report
 
 The evidence for each item of [readiness_checklist.md](readiness_checklist.md), per release, updated at QA
-(orchestrator gate 13). Ids, counts and paths only: no secrets, no personal data.
+(orchestrator gate 13). What may be written here: see the rules in [context/README.md](../README.md).
 
 ## <release> · <scope>
 
