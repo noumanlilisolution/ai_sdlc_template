@@ -129,8 +129,7 @@ Habits that make it work:
 
 Two more guards run on their own: after every agent commit a hook asks a sub-agent which docs the commit made stale,
 and the skills lock fails the build if anyone edits an upstream skill. Before a PR opens, the same docs check runs on
-the whole branch (orchestrator gate 10): it must come back ok, or each finding you agree to leave is listed under
-`## Docs waivers` in the PR body.
+the whole branch (orchestrator gate 10).
 
 ---
 
